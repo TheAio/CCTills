@@ -112,7 +112,62 @@ if #Args < 2 then
     print("-e extracts <input> into the folder <mntPoint>")
     return false
 end
-
+function extract(OFS,DEST)
+    if fs.exists(OFS) then
+        h=fs.open(OFS,"r")
+        local data={}
+        Counter = 0
+        while true do
+            Counter = Counter + 1
+            local line=h.readLine()
+            if line == nil then break end
+            data[#data+1]=line
+            if Counter > 199 then
+                Counter = 0
+                sleep(0)
+            end
+        end
+        h.close()
+        shell.run("mkdir",DEST)
+        Path=""
+        Len=0
+        Stage=1
+        local function writeToFile(FilePath,Len,start,raw)
+            Counter=0
+            h=fs.open(DEST..Path,"w")
+            for i=0,Len do
+                Counter=Counter+1
+                if Counter > 499 then
+                    sleep(0)
+                    Counter=0
+                end
+                h.writeLine(raw[start+i])
+            end
+            h.close()
+        end
+        line=0
+        while true do
+            line=line+1
+            if line==#data then break end
+            bar((line/#data),"Extracting OFS file","")
+            if Stage == 1 then
+                Stage=2
+                Path=data[line]
+            elseif Stage == 2 then
+                Len=tonumber(data[line])
+                Stage=3
+            elseif Stage == 3 then
+                if Path == nil then break end
+                writeToFile(DEST..Path,Len,line,data)
+                Stage=1
+                line=line+Len-1
+            end
+        end
+    else
+        print("File not found")
+        return false
+    end
+end
 if Args[1] == "-c" then
     compact()
 elseif Args[1] == "-e" then
