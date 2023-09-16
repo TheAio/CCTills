@@ -60,3 +60,20 @@ local keywords = { --no shorthands
 if e(args[1]) or e(args[2]) then
 	error("rompull <toCopy> <toWhere>",0)
 end
+
+toCopy = args[1]
+toWhere = args[2]
+
+for k,v in pairs(keywords) do
+	if toCopy == k then
+		toCopy = v
+		break
+	end
+end
+
+shell.run("copy",toCopy,toWhere)
+if fs.exists(toWhere) then
+	print("No errors occured in copy.")
+else
+	error("Error happened during copy.",1)
+end
