@@ -14,16 +14,49 @@
 --  You should have received a copy of the GNU General Public License
 --  along with this program.  If not, see <https://www.gniu.org/licenses/>.
 
-local args = {...}
+local function e(s)
+	return s == nil or s == ""
+end
 
-local keywords = {
-	[ "about" ] == "/rom/programs/about.lua",
-	[ "alias" ] == "/rom/programs/alias.lua",
-	[ "apis" ] == "/rom/programs/apis.lua",
-	[ "api" ] == "/rom/programs/apis.lua",
-	[ "cd" ] == "/rom/programs/cd.lua",
-	[ "clear" ] == "/rom/programs/clear.lua"
-	[ "cls" ] == "/rom/programs/clear.lua"
-	[ "copy" ] == "/rom/programs/copy.lua"
-	[ "cp" ] == "/rom/programs/copy.lua"
+local args = {...}
+local toCopy
+local toWhere
+local keywords = { --no shorthands
+	[ "about" ] = "/rom/programs/about.lua",
+	[ "alias" ] = "/rom/programs/alias.lua",
+	[ "apis" ] = "/rom/programs/apis.lua",
+	[ "api" ] = "/rom/programs/apis.lua",
+	[ "cd" ] = "/rom/programs/cd.lua",
+	[ "clear" ] = "/rom/programs/clear.lua",
+	[ "copy" ] = "/rom/programs/copy.lua",
+	[ "delete" ] = "/rom/programs/delete.lua",
+	[ "drive" ] = "/rom/programs/drive.lua",
+	[ "edit" ] = "/rom/programs/edit.lua",
+	[ "eject" ] = "/rom/programs/eject.lua",
+	[ "exit" ] = "/rom/programs/exit.lua",
+	[ "gps" ] = "/rom/programs/gps.lua",
+	[ "help" ] = "/rom/programs/help.lua",
+	[ "id" ] = "/rom/programs/id.lua",
+	[ "import" ] = "/rom/programs/import.lua",
+	[ "label" ] = "/rom/programs/label.lua",
+	[ "list" ] = "/rom/programs/list.lua",
+	[ "lua" ] = "/rom/programs/lua.lua",
+	[ "mkdir" ] = "/rom/programs/mkdir.lua",
+	[ "monitor" ] = "/rom/programs/monitor.lua",
+	[ "motd" ] = "/rom/programs/motd.lua",
+	[ "move" ] = "/rom/programs/move.lua",
+	[ "peripherals" ] = "/rom/programs/peripherals.lua",
+	[ "programs" ] = "/rom/programs/programs.lua",
+	[ "reboot" ] = "/rom/programs/reboot.lua",
+	[ "redstone" ] = "/rom/programs/redstone.lua",
+	[ "rename" ] = "/rom/programs/rename.lua",
+	[ "set" ] = "/rom/programs/set.lua",
+	[ "shell" ] = "/rom/programs/shell.lua",
+	[ "shutdown" ] = "/rom/programs/shutdown.lua",
+	[ "time" ] = "/rom/programs/time.lua",
+	[ "type" ] = "/rom/programs/type.lua"
 }
+
+if e(args[1]) or e(args[2]) then
+	error("rompull <toCopy> <toWhere>",0)
+end
