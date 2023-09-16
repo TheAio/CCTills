@@ -36,6 +36,8 @@
 
 local bootr_ver = 1
 
+local args = {...} --since CC hates having programs being aware of the dir theyre in and always starts searches from root, the only arg to supply is the path that bootr.cfg is in
+
 term.clear()
 term.setCursorPos(1,1)
 print("#### ")
@@ -44,17 +46,31 @@ print("#   #")
 print("#  #")
 print("#   #")
 print("#   #")
-print("#### bootr",bootr_ver)
+print("#### bootr",bootr_ver,"| By Dusk")
 
-local cfg_file
+local cfgFilePath = args[1]
 
-if not fs.exists("bootr.cfg") then
-	error("'bootr.cfg' not found")
+local cfg = require(cfgFilePath.."/bootr-cfg")
+
+if cfg.kernel_mode == 0 then
+	print("Automatically assume init and assorted os files require the kernel when needed, autorun init.")
+	sleep(1)
+	shell.run(cfg.initfile)
+elseif cfg.kernel_mode == 1 then
+	print("Kernel file ("..cfg.kernelfile..") is set to mode 1 (prog)")
+	if cfg.add_args == nil then
+		print("Running the kernel file with no args.")
+		print("Running init first though, and assuming init handles setup before kernel.")
+		sleep(1)
+		shell.run(cfg.initfile)
+		shell.run(cfg.kernelfile)
+	else
+		print("Running the kernel file with the given args.")
+		print("Running init first though, and assuming init handles setup before kernel.") --this is gonna bite me in the a** later lmao
+		print(cfg.add_args)
+		sleep(1)
+		shell.run(cfg.kernelfile,cfg.add_args)
+	end
 else
-	local handle = fs.open("bootr.cfg","r")
-	cfg_file = textutils.unserialize(handle.readAll)
-end
-
-for k,v in pairs(cfg_file) do --cant forget that do :kek:
-	print(k,v)
+	error("cfg.kernel_mode is not 1 or 0",0)
 end
