@@ -104,12 +104,29 @@ function compact()
         h.close()
     end
     saveFile()
+    if Args[3] == "-ACHF" then
+        local alib = require "alib"
+        alib.CharcodeFile("output.OFS","output.OFS")
+        alib.CharfileToHexfile("output.OFS","output.OFS")
+        alib.HexfileToACHF("output.OFS","output.OFS")
+    elseif Args[3] == "-HF" then
+        local alib = require "alib.lua"
+        alib.CharcodeFile("output.OFS","output.OFS")
+        alib.CharfileToHexfile("output.OFS","output.OFS")
+    elseif Args[3] == "-CF" then
+        local alib = require "alib.lua"
+        alib.CharcodeFile("output.OFS","output.OFS")
+    end
 end
 if #Args < 2 then
-    print("Usage: OFS.lua <mode> <input> {mntPoint}")
+    print("Usage: OFS.lua <mode> <input> {mntPoint/compmode}")
     print("Modes:")
-    print("-c compacts <input> into output.OFS")
+    print("-c compacts <input> into output.OFS with compression [compmode]")
     print("-e extracts <input> into the folder <mntPoint>")
+    print("Comp modes (requires alib.lua):")
+    print("-ACHF")
+    print("-HF")
+    print("-CF")
     return false
 end
 function extract(OFS,DEST)
