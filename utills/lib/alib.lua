@@ -56,13 +56,20 @@ function CharcodeFile(path,output)
     if data == false then
         error("alib: read error")
     else
+        print("Prepering data...")
         for line=1,#data do
             data[line] = data[line].."\n"
         end
         local h=fs.open(output,"w")
+        print("Compiling...")
+        local st=os.time()
         for line=1,#data do
             for char=1,string.len(data[line]) do
-                sleep(0)
+                if os.time()-st > 0.21 then
+                    print((line/#data)*(char/string.len(data[line])))
+                    sleep(0)
+                    st=os.time()
+                end
                 h.writeLine(string.byte(string.sub(data[line],char,char)))
             end
         end
@@ -111,7 +118,12 @@ function DecimalToHex(decimal)
         return tostring(decimal)
     end
     decimal=tonumber(decimal)
+    local st = os.time()
     while true do
+        if os.time()-st > 0.21 then
+            sleep(0)
+            st=os.time
+        end
         local intQuo=math.floor(decimal/16)
         local decRem=math.mod(decimal,16)
         if decRem > 10 then
@@ -145,11 +157,17 @@ function CharfileToHexfile(path,output)
     else
         local h=fs.open(output,"w")
         local line={}
+        local st=os.time()
         for lineNr=1,#data do
             if tonumber(data[lineNr]) == nil then error("File is char coded and can not be computed in a char coded perspective.") end
             h.writeLine(DecimalToHex(data[lineNr]))
-            sleep(0)
+            if os.time()-st > 0.21 then
+                print(math.floor(100*(lineNr/#data)),"%")
+                sleep(0)
+                st=os.time()
+            end
         end
+        print("Wrote:",#data/1000,"k lines")
         h.close()
     end
 end
@@ -162,11 +180,15 @@ function HexfileToACHF(path,output)
         error("alib: read error")
     else
         local specialTab = 
-        {"!","#","%","&","/","(",")","=","?","<",">","@","$","{","}","^","~","*","|"}
+        {"!","#","%","&","/","(",")","=","?","<",">","@","$","{","}","^","~","*","|","G","H","I","J","K","L",
+        "M","N","O","P","Q","R","S","T","V","W","X","Y","Z","_",".",",",";",":","-","a","b","c","d","e","f",
+        "g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"}
         local h=fs.open(output,"w")
         local matches={}
         local newData={}
+        local st=os.time()
         for line=1,#data do
+            
             local hasMatch = false
             for i=1,#matches do
                 if data[line] == matches[i][1] then
@@ -182,7 +204,11 @@ function HexfileToACHF(path,output)
                     newData[#newData+1] = data[line]
                 end
             end
-            print(data[line],">",newData[#newData])
+            if os.time()-st > 0.21 then
+                print(line/#data)
+                sleep(0)
+                st=os.time()
+            end
         end
         for i=1,#newData do
             h.writeLine(newData[i])
