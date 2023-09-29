@@ -26,38 +26,67 @@ end
 function compact()
     Content = {}
     Root=""
+    if Args[4] ~= nil then
+        if fs.exists(Args[4]) then
+            Ignore={Args[4]}
+            local h = fs.open(Args[4],"r")
+            while true do
+                sleep(0)
+                local i = h.readLine()
+                if i == nil then break end
+                Ignore[#Ignore+1] = i
+            end
+            h.close()
+        else
+            print("Path",Args[4],"not found!")
+            return false
+        end
+    else
+        Ignore={}
+    end
+    print("Please enter a destination path for the output:")
+    Destination=read()
     function compileTree(Path)
         if Path == nil then Path = "" end
         bar(0,"Scanning folders",Path)
         print(Root,"/",Path)
         local folder = fs.list(Path)
         for file=1,#folder do
+            local illegalFile = false
             bar((file/#folder),"Scanning folders",folder[file])
-            if fs.isDir(Path.."/"..folder[file]) then
-                compileTree(Path.."/"..folder[file])
-            else
-                local data = {}
-                local h=fs.open(Path.."/"..folder[file],"r")
-                counter=0
-                while true do
-                    counter=counter+1
-                    bar(0,"Reading file",folder[file])
-                    if h==nil then
-                        sleep(1)
-                        error("Failed to read "..Path.."/"..folder[file])
-                    end
-                    i=h.readLine()
-                    if i == nil then break else
-                        data[#data+1] = i
-                        if counter > 499 then
-                            sleep(0)
-                            counter=0
+            for illegalFileNr=1,#Ignore do
+                if folder[file] == Ignore[illegalFileNr] then
+                    illegalFile = true
+                    break
+                end
+            end
+            if not illegalFile then
+                if fs.isDir(Path.."/"..folder[file]) then
+                    compileTree(Path.."/"..folder[file])
+                else
+                    local data = {}
+                    local h=fs.open(Path.."/"..folder[file],"r")
+                    counter=0
+                    while true do
+                        counter=counter+1
+                        bar(0,"Reading file",folder[file])
+                        if h==nil then
+                            sleep(1)
+                            error("Failed to read "..Path.."/"..folder[file])
+                        end
+                        i=h.readLine()
+                        if i == nil then break else
+                            data[#data+1] = i
+                            if counter > 499 then
+                                sleep(0)
+                                counter=0
+                            end
                         end
                     end
+                    h.close()
+                    print(Path)
+                    Content[#Content+1]={Path.."/"..folder[file],data}
                 end
-                h.close()
-                print(Path)
-                Content[#Content+1]={Path.."/"..folder[file],data}
             end
         end
     end
@@ -86,7 +115,7 @@ function compact()
     end
     Counter=0
     function saveFile()
-        h=fs.open("output.OFS","w")
+        h=fs.open(Destination,"w")
         for i=1,#Content do
             local p,d=table.unpack(Content[i])
             bar((i/#Content),"Saveing to OFS file",i)
@@ -106,20 +135,20 @@ function compact()
     saveFile()
     if Args[3] == "-ACHF" then
         local alib = require "alib"
-        alib.CharcodeFile("output.OFS","output.OFS")
-        alib.CharfileToHexfile("output.OFS","output.OFS")
-        alib.HexfileToACHF("output.OFS","output.OFS")
+        alib.CharcodeFile(Destination,Destination)
+        alib.CharfileToHexfile(Destination,Destination)
+        alib.HexfileToACHF(Destination,Destination)
     elseif Args[3] == "-HF" then
         local alib = require "alib.lua"
-        alib.CharcodeFile("output.OFS","output.OFS")
-        alib.CharfileToHexfile("output.OFS","output.OFS")
+        alib.CharcodeFile(Destination,Destination)
+        alib.CharfileToHexfile(Destination,Destination)
     elseif Args[3] == "-CF" then
         local alib = require "alib.lua"
-        alib.CharcodeFile("output.OFS","output.OFS")
+        alib.CharcodeFile(Destination,Destination)
     end
 end
 if #Args < 2 then
-    print("Usage: OFS.lua <mode> <input> {mntPoint/compmode}")
+    print("Usage: OFS.lua <mode> <input> {mntPoint/compmode} {ofsIgnoreFilePath}")
     print("Modes:")
     print("-c compacts <input> into output.OFS with compression [compmode]")
     print("-e extracts <input> into the folder <mntPoint>")
