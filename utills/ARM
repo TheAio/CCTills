@@ -1,0 +1,57 @@
+print("Loading ARM...")
+if not fs.exists("skynet") then
+    shell.run("wget https://raw.githubusercontent.com/osmarks/skynet/master/client.lua skynet")
+end
+if not fs.exists("shapi") then
+    shell.run("pastebin get 6UV4qfNF shapi")
+end
+local skynet = require "skynet"
+local shapi = require("shapi")
+print("RX or TX? [T/R]")
+isTxMode = false
+while true do
+    E,K=os.pullEvent("key")
+    if K == keys.t then
+        isTxMode = true
+        break
+    elseif K == keys.r then
+        break
+    else
+        print("Press T or R")
+    end
+end
+print("Enter channel to use")
+local CH = tonumber(read())
+print("Enter the passcode to use")
+local PASS_HASH_MAP = shapi.digest(read("*"))
+local PASS_HASH = table.concat(PASS_HASH_MAP)
+print("Your hash is:",PASS_HASH)
+print("---")
+if isTxMode then
+    while true do
+        print(">")
+        local command = read()
+        local msg = PASS_HASH..command
+        skynet.send(CH,PASS_HASH..command)
+        PASS_HASH = table.concat(shapi.digest(msg))
+        print("New hash:",PASS_HASH)
+        print("New pass:",msg)
+        sleep(1)
+        local rxch,rxmsg = skynet.receive(CH)
+        print(rxmsg)
+    end
+else
+    while true do
+        local rxch,msg,time = skynet.receive(CH)
+        print("Got",msg,"at",time)
+        if string.sub(msg,1,string.len(PASS_HASH)) == PASS_HASH then
+            print("MSG IS VALID")
+            shell.run(string.sub(msg,string.len(PASS_HASH)+1,string.len(msg)))
+            PASS_HASH = table.concat(shapi.digest(msg))
+            sleep(2)
+            skynet.send(CH,"ARM OK")
+        else
+            printError("MSG IS NOT VALID")
+        end
+    end
+end
